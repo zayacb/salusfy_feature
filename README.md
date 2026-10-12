@@ -95,6 +95,12 @@ A full-featured async Python library for the Salus iT500 API with:
 2. Copy all files from this repository's `custom_components/salusfy/` to the directory
 3. Restart Home Assistant
 
+## Updates and releases
+
+Install through HACS (custom repository) and Home Assistant will show updates as an `update.*` entity. A restart is required after every update.
+
+To publish a version: bump `version` in `custom_components/salusfy/manifest.json`, then push a matching tag (for example `git tag v1.1.0 && git push origin v1.1.0`). The `Release` workflow checks that the tag equals the manifest version and creates a GitHub Release, which HACS then offers as an update.
+
 ## Configuration
 
 ### Setup via UI (Recommended)
