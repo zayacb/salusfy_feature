@@ -129,7 +129,7 @@ This fork is **heating only**. Systems with a hot water zone (CH1 + Hot Water) s
 ### Climate Entity (Heating Zones)
 - Current temperature reading
 - Target temperature control (5-35°C / 41-95°F)
-- HVAC modes: Heat, Off
+- HVAC modes: Heat, Off (turning on selects Salus **manual** mode, not the built-in schedule; the schedule is meant to be driven from Home Assistant)
 - Preset modes: Auto, Manual, Temp Hold
 - Current action: Heating, Idle, Off
 - Frost protection status
