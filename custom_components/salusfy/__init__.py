@@ -1,23 +1,24 @@
-"""The Salus iT500 integration."""
+"""The Salus iT500 integration (heating only)."""
 import logging
 from asyncio import sleep
-from aiohttp import ServerDisconnectedError, ClientResponseError
+from aiohttp import ClientError, ClientResponseError, ServerDisconnectedError
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import DOMAIN, UPDATE_INTERVAL, MIN_TIME_BETWEEN_UPDATES
-from .pyit500.auth import Auth
+from .pyit500.auth import Auth, AuthenticationError
 from .pyit500.device import Device
 from .pyit500.pyit500 import PyIt500
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = [Platform.CLIMATE, Platform.WATER_HEATER]
+PLATFORMS = [Platform.CLIMATE]
 
 
 class QuietLoggerAdapter(logging.LoggerAdapter):
@@ -60,6 +61,11 @@ class SalusDataCoordinator(DataUpdateCoordinator):
             try:
                 await self.device.async_update()
                 return self.device
+            except AuthenticationError as err:
+                # Credentials are no longer accepted: ask the user to re-authenticate
+                raise ConfigEntryAuthFailed(
+                    "Salus credentials were rejected"
+                ) from err
             except (ServerDisconnectedError, ClientResponseError) as err:
                 # Handle connection and auth errors with retry
                 if attempt < max_retries:
@@ -76,6 +82,10 @@ class SalusDataCoordinator(DataUpdateCoordinator):
                     # Try to refresh auth token on retry (auth.request already does this, but as fallback)
                     try:
                         await self.device.auth.refresh_token()
+                    except AuthenticationError as refresh_err:
+                        raise ConfigEntryAuthFailed(
+                            "Salus credentials were rejected"
+                        ) from refresh_err
                     except Exception as refresh_err:
                         _LOGGER.debug("Token refresh failed: %s", refresh_err)
                     continue
@@ -98,25 +108,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     session = async_get_clientsession(hass)
     auth = Auth(session, username, password)
+    api = PyIt500(auth)
 
     try:
         await auth.refresh_token()
-    except Exception as err:
-        _LOGGER.error("Failed to authenticate with Salus API: %s", err)
-        return False
+        device_list = await api.async_get_device_list()
 
-    api = PyIt500(auth)
+        if not device_list:
+            _LOGGER.error("No devices found for this account")
+            return False
 
-    # Get list of devices
-    device_list = await api.async_get_device_list()
-
-    if not device_list:
-        _LOGGER.error("No devices found for this account")
-        return False
-
-    # Use the first device (most users have only one thermostat)
-    device_id = device_list[0].device_id
-    device = await api.async_get_device(device_id)
+        # Use the first device (most users have only one thermostat)
+        device = await api.async_get_device(device_list[0].device_id)
+    except AuthenticationError as err:
+        raise ConfigEntryAuthFailed("Salus credentials were rejected") from err
+    except (ClientError, TimeoutError) as err:
+        # Cloud unreachable or erroring: Home Assistant retries setup automatically
+        raise ConfigEntryNotReady(f"Cannot reach Salus API: {err}") from err
 
     # Create coordinator
     coordinator = SalusDataCoordinator(hass, api, device)
