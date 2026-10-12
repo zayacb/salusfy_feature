@@ -8,6 +8,13 @@
           "username": "Email",
           "password": "Password"
         }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate Salus iT500",
+        "description": "Salus rejected the saved password for {username}. Enter the current password.",
+        "data": {
+          "password": "Password"
+        }
       }
     },
     "error": {
@@ -17,7 +24,23 @@
       "unknown": "Unexpected error occurred"
     },
     "abort": {
-      "already_configured": "Account is already configured"
+      "already_configured": "Account is already configured",
+      "reauth_successful": "Re-authentication was successful"
+    }
+  },
+  "entity": {
+    "climate": {
+      "salusfy": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "auto": "Auto",
+              "manual": "Manual",
+              "temp_hold": "Temporary Hold"
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -22,52 +22,46 @@ This component interfaces with the Salus iT500 cloud API (salus-it500.com) to co
 A full-featured async Python library for the Salus iT500 API with:
 - Comprehensive device attribute support
 - Type-safe enums for all device states
-- Support for all system types (CH1, CH1+CH2, CH1+Hot Water)
+- Support for system types CH1 and CH1+CH2 (a hot water zone, if present, is ignored)
 - Proper authentication and token management
 - Full async/await support
 
-#### 3. **Hot Water Support**
-- ✅ New **Water Heater entity** for systems with hot water zones
-- ✅ Multiple operation modes: Auto, Boost, Always On, Off
-- ✅ Boost timer support with remaining time tracking
-- ✅ Schedule type and running mode attributes
-
-#### 4. **Multi-Zone Heating Support**
+#### 3. **Multi-Zone Heating Support**
 - ✅ Automatic detection of system configuration
 - ✅ Support for dual heating zones (CH1 + CH2)
 - ✅ Each zone appears as a separate climate entity
 
-#### 5. **Preset Modes for Heating**
+#### 4. **Preset Modes for Heating**
 - **Auto** - Follow the programmed schedule
 - **Manual** - Manual temperature control
 - **Temp Hold** - Temporarily hold a temperature
 - Easy switching between modes without changing HVAC state
 
-#### 6. **Robust Error Handling**
+#### 5. **Robust Error Handling**
 - ✅ Automatic retry logic with exponential backoff
 - ✅ Graceful handling of API server errors (500, 502, 503, 504)
 - ✅ Connection error recovery with retry attempts
 - ✅ Token refresh on authentication failures
 - ✅ Detailed error logging for troubleshooting
 
-#### 7. **Optimistic State Updates**
+#### 6. **Optimistic State Updates**
 - ✅ Instant UI feedback when changing settings
 - ✅ No lag when adjusting temperature or modes
 - ✅ Automatic state synchronization after changes
 
-#### 8. **Smart API Management**
+#### 7. **Smart API Management**
 - ✅ DataUpdateCoordinator for efficient polling
 - ✅ Rate limiting to prevent API overload (5-second minimum between updates)
 - ✅ Debounced refresh requests
 - ✅ Configurable update intervals (30 seconds default)
 - ✅ Reduced debug logging to minimize noise
 
-#### 9. **Temperature Unit Support**
+#### 8. **Temperature Unit Support**
 - ✅ Automatic detection of Celsius or Fahrenheit
 - ✅ Proper temperature ranges based on unit setting
 - ✅ Correct min/max temperature limits
 
-#### 10. **Additional Features**
+#### 9. **Additional Features**
 - ✅ Frost protection status monitoring
 - ✅ Schedule type information
 - ✅ Relay status (heating/idle/off)
@@ -115,6 +109,15 @@ A full-featured async Python library for the Salus iT500 API with:
 ### Legacy configuration.yaml (Deprecated)
 The old YAML configuration method is no longer supported. Please use the UI configuration flow.
 
+## Scope
+
+This fork is **heating only**. Systems with a hot water zone (CH1 + Hot Water) still work: the heating zone is exposed as a climate entity, the hot water zone is not exposed to Home Assistant.
+
+## Reliability
+
+- If the Salus cloud is unreachable at startup, Home Assistant retries the setup automatically.
+- If Salus rejects the saved password, Home Assistant starts a re-authentication flow (Settings → Devices & Services). Requires a recent Home Assistant version (2024.11+).
+
 ## Supported Features
 
 ### Climate Entity (Heating Zones)
@@ -125,12 +128,6 @@ The old YAML configuration method is no longer supported. Please use the UI conf
 - Current action: Heating, Idle, Off
 - Frost protection status
 - Schedule type information
-
-### Water Heater Entity (Hot Water)
-- Operation modes: Auto, Boost, Always On, Off
-- Boost timer with remaining hours
-- Schedule type tracking
-- Running mode status
 
 ## Known Issues & Workarounds
 
@@ -172,7 +169,7 @@ logger:
 
 **Original Component**: [@floringhimie](https://github.com/floringhimie/salusfy)
 
-**Enhanced Version**: Significant improvements including config flow, hot water support, multi-zone heating, robust error handling, and complete API implementation.
+**Enhanced Version**: Significant improvements including config flow, multi-zone heating, re-authentication flow, robust error handling, and complete API implementation.
 
 ## Contributing
 

@@ -3,6 +3,10 @@ from hashlib import md5
 from aiohttp import ClientSession, ClientResponse, ClientTimeout, ClientResponseError
 
 
+class AuthenticationError(Exception):
+    """Raised when the Salus API rejects the credentials."""
+
+
 class Auth:  # pylint: disable=too-few-public-methods
     """Class to make authenticated requests."""
 
@@ -31,16 +35,33 @@ class Auth:  # pylint: disable=too-few-public-methods
         return self.user_id
 
     async def refresh_token(self) -> None:
-        """Get user ID & security token using credentials"""
+        """Get user ID & security token using credentials.
+
+        Raises AuthenticationError when the credentials are rejected.
+        Network problems and server errors (5xx) are raised as aiohttp
+        exceptions so callers can tell them apart from bad credentials.
+        """
         timeout = ClientTimeout(total=30)
         resp = await self.websession.post(
             f"{self.host}/{self.auth_path}",
             json={"username": self.username, "password": self.passhash},
             timeout=timeout,
         )
+        if resp.status in (400, 401, 403):
+            raise AuthenticationError(
+                f"Salus API rejected the credentials (HTTP {resp.status})"
+            )
+        resp.raise_for_status()
         resp_values = await resp.json()
-        self.user_id = resp_values["userId"]
-        self.security_token = resp_values["securityToken"]
+        try:
+            user_id = resp_values["userId"]
+            security_token = resp_values["securityToken"]
+        except (KeyError, TypeError) as err:
+            raise AuthenticationError(
+                "Salus API login response has no userId/securityToken"
+            ) from err
+        self.user_id = user_id
+        self.security_token = security_token
 
     async def request(self, method: str, path: str, **kwargs) -> ClientResponse:
         """Make a request with automatic token refresh on auth errors."""
