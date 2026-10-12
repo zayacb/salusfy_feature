@@ -32,10 +32,13 @@ PRESET_TEMP_HOLD = "temp_hold"
 
 PRESET_MODES = [PRESET_AUTO, PRESET_MANUAL, PRESET_TEMP_HOLD]
 
-# Mapping between HA HVAC modes and Salus modes
+# Mapping between HA HVAC modes and Salus modes.
+# Turning heating on puts Salus into MANUAL, not AUTO: the heating schedule is
+# managed by Home Assistant, so the built-in Salus schedule must not take over.
+# The Salus schedule is still reachable through the "auto" preset.
 HVAC_MODE_TO_SALUS = {
     HVACMode.OFF: ConsolidatedMode.OFF,
-    HVACMode.HEAT: ConsolidatedMode.AUTO,
+    HVACMode.HEAT: ConsolidatedMode.MANUAL,
 }
 
 SALUS_MODE_TO_HVAC = {
