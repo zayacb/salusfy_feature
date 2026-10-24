@@ -35,8 +35,7 @@
           "preset_mode": {
             "state": {
               "auto": "Auto",
-              "manual": "Manual",
-              "temp_hold": "Temporary Hold"
+              "manual": "Manual"
             }
           }
         }

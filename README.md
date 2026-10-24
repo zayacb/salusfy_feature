@@ -31,11 +31,12 @@ A full-featured async Python library for the Salus iT500 API with:
 - ✅ Support for dual heating zones (CH1 + CH2)
 - ✅ Each zone appears as a separate climate entity
 
-#### 4. **Preset Modes for Heating**
-- **Auto** - Follow the programmed schedule
-- **Manual** - Manual temperature control
-- **Temp Hold** - Temporarily hold a temperature
-- Easy switching between modes without changing HVAC state
+#### 4. **Virtual Preset Modes for Heating**
+- **Auto** - Setpoint is controlled by a Home Assistant automation
+- **Manual** - Setpoint is set by you in Home Assistant; automations should leave it alone
+- Both presets are stored in Home Assistant. The Salus device itself is always kept in its own MANUAL mode while heating (`heat` = Salus MANUAL)
+- If the device is switched to AUTO/Temp Hold from the Salus app or the thermostat, Home Assistant reports preset `auto` so an automation can bring it back
+- The real device mode is exposed in the `salus_mode` attribute
 
 #### 5. **Robust Error Handling**
 - ✅ Automatic retry logic with exponential backoff
@@ -130,7 +131,7 @@ This fork is **heating only**. Systems with a hot water zone (CH1 + Hot Water) s
 - Current temperature reading
 - Target temperature control (5-35°C / 41-95°F)
 - HVAC modes: Heat, Off (turning on selects Salus **manual** mode, not the built-in schedule; the schedule is meant to be driven from Home Assistant)
-- Preset modes: Auto, Manual, Temp Hold
+- Preset modes: Auto, Manual (virtual, see above)
 - Current action: Heating, Idle, Off
 - Frost protection status
 - Schedule type information
