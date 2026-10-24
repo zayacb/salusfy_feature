@@ -35,8 +35,7 @@
           "preset_mode": {
             "state": {
               "auto": "Automatický",
-              "manual": "Manuální",
-              "temp_hold": "Dočasné přidržení"
+              "manual": "Manuální"
             }
           }
         }
