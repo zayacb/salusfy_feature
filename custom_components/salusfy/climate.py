@@ -101,9 +101,9 @@ class SalusThermostat(CoordinatorEntity[SalusDataCoordinator], ClimateEntity, Re
 
         # Set temperature unit based on device configuration
         if coordinator.device.temperature_unit == TemperatureUnit.FAHRENHEIT:
-            self._attr_temperature_unit = UnitOfTemperature.FAHRENHEIT
+            self._attr_native_temperature_unit = UnitOfTemperature.FAHRENHEIT
         else:
-            self._attr_temperature_unit = UnitOfTemperature.CELSIUS
+            self._attr_native_temperature_unit = UnitOfTemperature.CELSIUS
 
         # Use device name as prefix for entity name
         device_name = coordinator.device.description or "Salus iT500"
@@ -128,12 +128,12 @@ class SalusThermostat(CoordinatorEntity[SalusDataCoordinator], ClimateEntity, Re
         return self.coordinator.device.ch2
 
     @property
-    def current_temperature(self) -> float | None:
+    def native_current_temperature(self) -> float | None:
         """Return the current temperature."""
         return self._zone.current_room_temp
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         """Return the temperature we try to reach."""
         if self._optimistic_target_temp is not None:
             return self._optimistic_target_temp
@@ -174,14 +174,14 @@ class SalusThermostat(CoordinatorEntity[SalusDataCoordinator], ClimateEntity, Re
     @property
     def min_temp(self) -> float:
         """Return the minimum temperature."""
-        if self._attr_temperature_unit == UnitOfTemperature.FAHRENHEIT:
+        if self._attr_native_temperature_unit == UnitOfTemperature.FAHRENHEIT:
             return 41.0  # 5°C in Fahrenheit
         return 5.0
 
     @property
     def max_temp(self) -> float:
         """Return the maximum temperature."""
-        if self._attr_temperature_unit == UnitOfTemperature.FAHRENHEIT:
+        if self._attr_native_temperature_unit == UnitOfTemperature.FAHRENHEIT:
             return 95.0  # 35°C = 95°F
         return 35.0
 
